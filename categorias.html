@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Categorías</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Formulario de Categorías</h2>
+        <form id="categoria-form">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="description">Descripción:</label>
+            <input type="text" id="description" name="description">
+
+            <label for="status">Estado:</label>
+            <select id="status" name="status" required>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+            </select>
+
+            <label for="created_by">Creado por (ID de usuario):</label>
+            <input type="number" id="created_by" name="created_by" required>
+
+            <label for="updated_by">Actualizado por (ID de usuario):</label>
+            <input type="number" id="updated_by" name="updated_by" required>
+
+            <button type="submit">Guardar</button>
+        </form>
+
+        <h2>Lista de Categorías</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Creado por</th>
+                    <th>Actualizado por</th>
+                    <th>Fecha de Creación</th>
+                    <th>Fecha de Actualización</th>
+                </tr>
+            </thead>
+            <tbody id="categoria-table-body">
+                <!-- Los datos se insertarán aquí por JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Función para cargar las categorías
+        async function loadCategorias() {
+            const response = await fetch('/api/categorias');
+            const categorias = await response.json();
+            const tableBody = document.getElementById('categoria-table-body');
+            tableBody.innerHTML = ''; // Limpiar tabla existente
+
+            categorias.forEach(categoria => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${categoria.id}</td>
+                    <td>${categoria.name}</td>
+                    <td>${categoria.description}</td>
+                    <td>${categoria.status}</td>
+                    <td>${categoria.created_by}</td>
+                    <td>${categoria.updated_by}</td>
+                    <td>${new Date(categoria.created_at).toLocaleString()}</td>
+                    <td>${new Date(categoria.updated_at).toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Función para agregar una nueva categoría
+        document.getElementById('categoria-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+
+            const response = await fetch('/api/categorias', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                loadCategorias(); // Recargar la lista de categorías
+                this.reset(); // Limpiar el formulario
+            } else {
+                console.error('Error al guardar la categoría');
+            }
+        });
+
+        // Cargar datos cuando se carga la página
+        document.addEventListener('DOMContentLoaded', loadCategorias);
+    </script>
+</body>
+</html>
